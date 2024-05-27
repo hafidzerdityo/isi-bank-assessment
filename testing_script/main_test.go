@@ -18,7 +18,7 @@ func TestPositiveCaseTabung(t *testing.T) {
 
     resp, err := client.R().
         SetHeader("Content-Type", "application/json").
-        SetHeader("Authorization", "643007121.111111").
+        SetHeader("Authorization", "563582419.111111").
         SetBody(reqBody).
         Post(url)
 
@@ -58,7 +58,7 @@ func TestPositiveCaseTarik(t *testing.T) {
 
     resp, err := client.R().
         SetHeader("Content-Type", "application/json").
-        SetHeader("Authorization", "643007121.111111").
+        SetHeader("Authorization", "563582419.111111").
         SetBody(reqBody).
         Post(url)
 
@@ -78,7 +78,7 @@ func TestNegativeCaseTarik(t *testing.T) {
 
     resp, err := client.R().
         SetHeader("Content-Type", "application/json").
-        SetHeader("Authorization", "643007121.111111").
+        SetHeader("Authorization", "563582419.111111").
         SetBody(reqBody).
         Post(url)
 
