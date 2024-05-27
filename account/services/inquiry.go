@@ -112,11 +112,22 @@ func (s *ServiceSetup)GetMutasi(reqPayload dao.NoRekeningReq) (appResponse []dao
 	}
 
 	// Get Mutasi
+
 	for _, val := range mutasiData {
+		derNominalIn := float64(0)
+		if val.NominalIn != nil{
+			derNominalIn = *val.NominalIn
+		}
+		derNominalOut := float64(0)
+		if val.NominalOut != nil{
+			derNominalOut = *val.NominalOut
+		}
 		mutasiRes := dao.MutasiRes{
 			Waktu:          val.Waktu,
 			JenisTransaksi: val.JenisTransaksi,
-			Nominal:        val.Nominal,
+			IdJurnal: val.IdJurnal,
+			NominalIn:        derNominalIn,
+			NominalOut:       derNominalOut,
 		}
 		appResponse = append(appResponse, mutasiRes)
 	}

@@ -17,12 +17,11 @@ type EventStreamConfig struct {
 }
 
 
-func (k *EventStreamConfig)PublishJournal(message dao.PubStruct) (err error) {
+func (k *EventStreamConfig)PublishJournal(ctx context.Context, message dao.PubStruct) (err error) {
 	k.Logger.Info(
 		logrus.Fields{"pub_payload": fmt.Sprintf("%+v", message)}, nil, "START: PublishJournal Stream",
 	)
 	// Use XAdd to publish the message
-	ctx := context.Background()
 	messageJson, err := json.Marshal(message)
 	if err != nil {
 		remark := "error marshaling message" 
@@ -45,7 +44,7 @@ func (k *EventStreamConfig)PublishJournal(message dao.PubStruct) (err error) {
 		return
 	}
 
-	remark := "Successfully published message"
+	remark := "END: PublishJournal Stream"
 	k.Logger.Info(
 		logrus.Fields{"response": fmt.Sprintf("%+v", string(messageJson))}, nil, remark,
 	)

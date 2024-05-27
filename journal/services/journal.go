@@ -20,10 +20,18 @@ func (s *ServiceSetup)CreateJournal(reqPayload dao.SubStruct) (appResponse dao.C
 
 	// insert journal data
 	var insertJournalParam dao.Journal
-	insertJournalParam.TanggalTransaksi = reqPayload.TanggalTransaksi
+	insertJournalParam.Waktu = reqPayload.Waktu
 	insertJournalParam.NoRekening = reqPayload.NoRekening
-	insertJournalParam.Nominal= reqPayload.Nominal
+	insertJournalParam.NominalIn = &reqPayload.NominalIn
+	if(reqPayload.NominalIn == 0){
+		insertJournalParam.NominalIn = nil
+	}
+	insertJournalParam.NominalOut = &reqPayload.NominalOut
+	if(reqPayload.NominalOut == 0){
+		insertJournalParam.NominalOut = nil
+	}
 	insertJournalParam.JenisTransaksi = reqPayload.JenisTransaksi
+	insertJournalParam.IdJurnal = reqPayload.IdJurnal
 	err = s.Datastore.InsertJournal(tx, insertJournalParam)
 	if err != nil {
 		tx.Rollback()

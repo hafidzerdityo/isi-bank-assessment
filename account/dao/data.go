@@ -23,7 +23,6 @@ type CreateTabungTarikReq struct {
 type CreateTabungTarikUpdate struct {
 	Nominal    float64
 	NoRekening    string
-	Pin string
 }
 
 type CreateTransferReq struct {
@@ -37,10 +36,12 @@ type CreateTransferUpdate struct {
 }
 
 type PubStruct struct {
-	TanggalTransaksi time.Time `json:"tanggal_transaksi"`
+	Waktu time.Time `json:"waktu"`
 	NoRekening string    `json:"no_rekening"`
+	IdJurnal          string     `json:"id_jurnal"`
 	JenisTransaksi string    `json:"jenis_transaksi"`
-	Nominal    float64   `json:"nominal"`
+	NominalIn      float64      `json:"nominal_in"`
+	NominalOut      float64      `json:"nominal_out"`
 }
 
 type NoRekeningReq struct {
@@ -49,8 +50,10 @@ type NoRekeningReq struct {
 
 type MutasiRes struct {
 	Waktu time.Time `json:"waktu"`
+	IdJurnal string `json:"id_jurnal"`
 	JenisTransaksi string    `json:"kode_transaksi"`
-	Nominal float64    `json:"nominal"`
+	NominalIn float64    `json:"nominal_in"`
+	NominalOut float64    `json:"nominal_out"`
 }
 
 type CheckAccountAndPinReq struct {

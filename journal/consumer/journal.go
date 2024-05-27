@@ -14,7 +14,7 @@ func (a *ConsumerSetup) CreateJournalLoop(ctx context.Context, redisClient *redi
   for {
 	entries, err := redisClient.XRead(ctx, &redis.XReadArgs{
 		Streams:  []string{topic, "$"},
-		Count:    2,
+		Count:    1,
 		Block:    0,
 	}).Result()
 	if err != nil {

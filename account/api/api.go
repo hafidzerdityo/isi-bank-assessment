@@ -44,16 +44,16 @@ func InitApi(loggerInit *logrus.Logger, dbInit *gorm.DB, EventPubInit startup.Ev
 	v1 := api.Group("/v1")
 	user := v1.Group("/user_management")
 	trx := v1.Group("/transaction")
-	// inq := v1.Group("/inquiry")
-	trx.Use(apiSetup.PinDecode())
-	// inq.Use(apiSetup.PinDecode())
+	inq := v1.Group("/inquiry")
+	trx.Use(apiSetup.JwtDecode())
+	inq.Use(apiSetup.JwtDecode())
 	user.Post("/daftar", apiSetup.CreateUser)
-	// user.Post("/login", apiSetup.AccountLogin)
+	user.Post("/login", apiSetup.AccountLogin)
 	trx.Post("/tabung", apiSetup.CreateTabung)
 	trx.Post("/tarik", apiSetup.CreateTarik)
-	// trx.Post("/transfer", apiSetup.CreateTransfer)
-	// inq.Get("/saldo", apiSetup.GetSaldo)
-	// inq.Get("/mutasi", apiSetup.GetMutasi)
+	trx.Post("/transfer", apiSetup.CreateTransfer)
+	inq.Get("/saldo", apiSetup.GetSaldo)
+	inq.Get("/mutasi", apiSetup.GetMutasi)
 	
 	return 
 }

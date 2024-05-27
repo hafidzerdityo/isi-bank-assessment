@@ -3,10 +3,12 @@ package dao
 import "time"
 
 type SubStruct struct {
-	TanggalTransaksi time.Time `json:"tanggal_transaksi"`
+	Waktu time.Time `json:"waktu"`
 	NoRekening string    `json:"no_rekening"`
+	IdJurnal          string     `json:"id_jurnal"`
 	JenisTransaksi string    `json:"jenis_transaksi"`
-	Nominal    float64   `json:"nominal"`
+	NominalIn      float64      `json:"nominal_in"`
+	NominalOut      float64      `json:"nominal_out"`
 }
 type CreateJournalRes struct {
 	Success bool `json:"success"`
