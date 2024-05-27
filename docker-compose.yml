@@ -1,0 +1,72 @@
+version: "3"
+
+services:
+  account_service:
+    build:
+      context: .
+      dockerfile: Dockerfile.Account
+    image: account_service:latest
+    container_name: account_service
+    env_file:
+      - .env
+    ports:
+      - "${SERVICE_PORT_ACCOUNT}:${SERVICE_PORT_ACCOUNT}"
+    volumes:
+      - ./account:/code
+    depends_on:
+      - postgres_account_go
+      - redis
+
+  postgres_account_go:
+    image: postgres:latest
+    container_name: pg_account_go
+    restart: always
+    env_file:
+      - ./account/config.env
+      - .env
+    ports:
+      - "${DB_ACCOUNT_PORT}:${DB_ACCOUNT_PORT}"
+    volumes:
+      - postgres_data_go:/var/lib/postgresql/data
+    command: postgres -c listen_addresses='*' -c port=8103
+
+  journal_service:
+    build:
+      context: .
+      dockerfile: Dockerfile.Journal
+    image: journal_service:latest
+    container_name: journal_service
+    env_file:
+      - .env
+    ports:
+      - "${SERVICE_PORT_JOURNAL}:${SERVICE_PORT_JOURNAL}"
+    volumes:
+      - ./journal:/code
+    depends_on:
+      - postgres_journal_go
+      - redis
+
+  postgres_journal_go:
+    image: postgres:latest
+    container_name: pg_journal_go
+    restart: always
+    env_file:
+      - ./journal/config.env
+      - .env
+    ports:
+      - "${DB_JOURNAL_PORT}:${DB_JOURNAL_PORT}"
+    volumes:
+      - postgres_data_journal_go:/var/lib/postgresql/data
+    command: postgres -c listen_addresses='*' -c port=8104
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379" # Default Redis port
+    volumes:
+      - redis-data:/data # Persistent data volume
+
+volumes:
+  postgres_data_go:
+  postgres_data_journal_go:
+  redis-data:
