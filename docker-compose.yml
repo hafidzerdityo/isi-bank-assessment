@@ -61,10 +61,12 @@ services:
 
   redis:
     image: redis:latest
+    env_file:
+      - .env
     ports:
-      - "6379:6379" # Default Redis port
+      - "${REDIS_PORT}:${REDIS_PORT}"
     volumes:
-      - redis-data:/data # Persistent data volume
+      - redis-data:/data
 
 volumes:
   postgres_data_go:

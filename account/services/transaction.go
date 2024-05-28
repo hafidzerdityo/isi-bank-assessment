@@ -399,4 +399,3 @@ func (s *ServiceSetup)CreateTransfer(reqPayload dao.CreateTransferUpdate) (appRe
 	)
 	return
 }
-
