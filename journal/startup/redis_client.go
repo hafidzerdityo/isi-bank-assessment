@@ -9,7 +9,7 @@ import (
 
 func InitiateRedisStream(loggerInit *logrus.Logger, broker string) (redisClient *redis.Client, err error) {
     redisClient = redis.NewClient(&redis.Options{
-        Addr: "redis:6379", // Connect to the Redis container using its service name
+        Addr: broker, // Connect to the Redis container using its service name
         DB:   0,            // Use the default database (0)
     })
 
