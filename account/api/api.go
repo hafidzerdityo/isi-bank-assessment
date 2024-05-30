@@ -48,6 +48,8 @@ func InitApi(loggerInit *logrus.Logger, dbInit *gorm.DB, EventPubInit startup.Ev
 	trx.Use(apiSetup.PinDecode())
 
 	trx.Post("/tabung", apiSetup.CreateTabung)
+	trx.Post("/tarik", apiSetup.CreateTarik)
+	trx.Post("/daftar", apiSetup.CreateUser)
 
 	
 	return 
