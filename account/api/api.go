@@ -44,12 +44,13 @@ func InitApi(loggerInit *logrus.Logger, dbInit *gorm.DB, EventPubInit startup.Ev
 	v1 := api.Group("/v1")
 
 	trx := v1.Group("/transaction")
+	user := v1.Group("/user_management")
 
 	trx.Use(apiSetup.PinDecode())
 
 	trx.Post("/tabung", apiSetup.CreateTabung)
 	trx.Post("/tarik", apiSetup.CreateTarik)
-	trx.Post("/daftar", apiSetup.CreateUser)
+	user.Post("/daftar", apiSetup.CreateUser)
 
 	
 	return 
