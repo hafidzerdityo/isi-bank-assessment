@@ -47,13 +47,23 @@ type PubStruct struct {
 type NoRekeningReq struct {
 	NoRekening string  `json:"no_rekening" validate:"required"`
 }
+type MutasiReq struct {
+	NoRekening string  `json:"no_rekening" validate:"required"`
+	Offset *int  `json:"offset"`
+	Limit *int  `json:"limit"`
+}
 
-type MutasiRes struct {
+type MutasiData struct {
 	Waktu time.Time `json:"waktu"`
 	IdJurnal string `json:"id_jurnal"`
 	JenisTransaksi string    `json:"kode_transaksi"`
 	NominalIn float64    `json:"nominal_in"`
 	NominalOut float64    `json:"nominal_out"`
+}
+
+type MutasiRes struct {
+	ListData []MutasiData `json:"list_data"`
+	TotalData int64 `json:"total_data"`
 }
 
 type CheckAccountAndPinReq struct {

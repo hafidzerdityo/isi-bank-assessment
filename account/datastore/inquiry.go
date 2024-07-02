@@ -9,26 +9,39 @@ import (
 )
 
 
-func (d *DatastoreSetup) GetMutasi(tx *gorm.DB, ID int) (datastoreResponse []dao.Transaction, err error) {
+func (d *DatastoreSetup) GetMutasi(tx *gorm.DB, ID int, limit int, offset int) (datastoreResponse []dao.Transaction, count int64 , err error) {
 	reqPayloadForLog := map[string]interface{}{
-		"ID": ID,
+	  "ID":    ID,
+	  "limit": limit,
+	  "offset": offset,
 	}
 	d.Logger.Info(
-		logrus.Fields{"req_payload": fmt.Sprintf("%+v", reqPayloadForLog)}, nil, "START: GetMutasi Datastore",
+	  logrus.Fields{"req_payload": fmt.Sprintf("%+v", reqPayloadForLog)}, nil, "START: GetMutasi Datastore",
 	)
+  
+	err = tx.Where("id_rekening = ?", ID).Offset(offset).Limit(limit).Find(&datastoreResponse).Error
+	
+	if err != nil {
+	  d.Logger.Error(
+		logrus.Fields{"error": err.Error()}, nil, err.Error(),
+	  )
+	  return
+	}
 
-	err = tx.Where("id_rekening = ?", ID).Find(&datastoreResponse).Error
+	err = tx.Model(&dao.Transaction{}).Where("id_rekening = ?", ID).Count(&count).Error
+
 	if err != nil {
 		d.Logger.Error(
-			logrus.Fields{"error": err.Error()}, nil, err.Error(),
+		logrus.Fields{"error": err.Error()}, nil, err.Error(),
 		)
 		return
 	}
+
 	remark := "END: GetMutasi Datastore"
 	d.Logger.Info(
-		logrus.Fields{"response": fmt.Sprintf("%+v", datastoreResponse)}, nil, remark,
+	  logrus.Fields{"response": fmt.Sprintf("%+v", datastoreResponse)}, nil, remark,
 	)
-
+  
 	return
-}
+  }
 

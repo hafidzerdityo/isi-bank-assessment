@@ -61,7 +61,7 @@ func (s *ServiceSetup)GetSaldo(reqPayload dao.NoRekeningReq) (appResponse dao.Sa
 }
 
 
-func (s *ServiceSetup)GetMutasi(reqPayload dao.NoRekeningReq) (appResponse []dao.MutasiRes, remark string, err error) {
+func (s *ServiceSetup)GetMutasi(reqPayload dao.MutasiReq) (appResponse dao.MutasiRes, remark string, err error) {
 	s.Logger.Info(
 		logrus.Fields{"req_payload": fmt.Sprintf("%+v", appResponse)}, nil, "START: GetMutasi Service",
 	)
@@ -91,8 +91,18 @@ func (s *ServiceSetup)GetMutasi(reqPayload dao.NoRekeningReq) (appResponse []dao
 		return
 	}
 
+	
+	getMutasiParamLimit := int(15)
+	if reqPayload.Limit != nil{
+		getMutasiParamLimit = *reqPayload.Limit
+	}
+	getMutasiParamOffset := int(0)
+	if reqPayload.Offset != nil{
+		getMutasiParamOffset = *reqPayload.Offset
+	}
+
 	// get mutasi
-	mutasiData, err := s.Datastore.GetMutasi(s.Db, customerData.ID)
+	mutasiData, countMutasi, err := s.Datastore.GetMutasi(s.Db, customerData.ID, getMutasiParamLimit, getMutasiParamOffset)
 	if (len(mutasiData) == 0){
 		tx.Rollback()
 		err = fmt.Errorf("mutasi data not exist error")
@@ -111,8 +121,7 @@ func (s *ServiceSetup)GetMutasi(reqPayload dao.NoRekeningReq) (appResponse []dao
 		return
 	}
 
-	// Get Mutasi
-
+	// Get List Mutasi
 	for _, val := range mutasiData {
 		derNominalIn := float64(0)
 		if val.NominalIn != nil{
@@ -122,15 +131,17 @@ func (s *ServiceSetup)GetMutasi(reqPayload dao.NoRekeningReq) (appResponse []dao
 		if val.NominalOut != nil{
 			derNominalOut = *val.NominalOut
 		}
-		mutasiRes := dao.MutasiRes{
+		mutasiRes := dao.MutasiData{
 			Waktu:          val.Waktu,
 			JenisTransaksi: val.JenisTransaksi,
 			IdJurnal: val.IdJurnal,
 			NominalIn:        derNominalIn,
 			NominalOut:       derNominalOut,
 		}
-		appResponse = append(appResponse, mutasiRes)
+		appResponse.ListData = append(appResponse.ListData, mutasiRes)
 	}
+
+	appResponse.TotalData = countMutasi
 
 	tx.Commit()
 
