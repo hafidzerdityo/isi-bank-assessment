@@ -9,17 +9,17 @@ import (
 )
 
 
-func (d *DatastoreSetup) GetMutasi(tx *gorm.DB, ID int, limit int, offset int) (datastoreResponse []dao.Transaction, count int64 , err error) {
+func (d *DatastoreSetup) GetMutasi(tx *gorm.DB, ID int, limit int, page int) (datastoreResponse []dao.Transaction, count int64 , err error) {
 	reqPayloadForLog := map[string]interface{}{
 	  "ID":    ID,
 	  "limit": limit,
-	  "offset": offset,
+	  "offset": page,
 	}
 	d.Logger.Info(
 	  logrus.Fields{"req_payload": fmt.Sprintf("%+v", reqPayloadForLog)}, nil, "START: GetMutasi Datastore",
 	)
   
-	err = tx.Where("id_rekening = ?", ID).Offset(offset).Limit(limit).Find(&datastoreResponse).Error
+	err = tx.Where("id_rekening = ?", ID).Offset((page - 1) * limit).Limit(limit).Find(&datastoreResponse).Error
 	
 	if err != nil {
 	  d.Logger.Error(

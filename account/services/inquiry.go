@@ -96,9 +96,9 @@ func (s *ServiceSetup)GetMutasi(reqPayload dao.MutasiReq) (appResponse dao.Mutas
 	if reqPayload.Limit != nil{
 		getMutasiParamLimit = *reqPayload.Limit
 	}
-	getMutasiParamOffset := int(0)
-	if reqPayload.Offset != nil{
-		getMutasiParamOffset = *reqPayload.Offset
+	getMutasiParamOffset := int(1)
+	if reqPayload.Page != nil{
+		getMutasiParamOffset = *reqPayload.Page
 	}
 
 	// get mutasi

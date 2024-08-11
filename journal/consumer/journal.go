@@ -56,9 +56,6 @@ func (a *ConsumerSetup) CreateJournalLoop(ctx context.Context, redisClient *redi
 
 			_, remark, err := a.Services.CreateJournal(reqRedis)
 
-			
-
-			
 			if err != nil {
 				a.Logger.Error(
 					logrus.Fields{"error": err.Error()}, nil, remark,

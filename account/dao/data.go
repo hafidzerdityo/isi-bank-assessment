@@ -49,7 +49,7 @@ type NoRekeningReq struct {
 }
 type MutasiReq struct {
 	NoRekening string  `json:"no_rekening" validate:"required"`
-	Offset *int  `json:"offset"`
+	Page *int  `json:"page"`
 	Limit *int  `json:"limit"`
 }
 
