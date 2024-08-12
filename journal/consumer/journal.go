@@ -3,6 +3,7 @@ package consumer
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/go-redis/redis/v8"
@@ -59,11 +60,11 @@ func (a *ConsumerSetup) CreateJournalLoop(ctx context.Context, redisClient *redi
 				a.Logger.Error(
 					logrus.Fields{"error": err.Error()}, nil, remark,
 				)
-				// errors.As(err, &perr)
-				// if perr.Code == "23505"{
-				// 	lastID = messageID
-				// }
-				// continue
+				errors.As(err, &perr)
+				if perr.Code == "23505"{
+					lastID = messageID
+				}
+				continue
 			}
 
 			// Update lastID to the ID of the last successfully processed message.
