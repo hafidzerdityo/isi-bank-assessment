@@ -56,10 +56,22 @@ func (a *ApiSetup) GetSaldo(c *fiber.Ctx) error {
 }
 
 func (a *ApiSetup) GetMutasi(c *fiber.Ctx) error {
-	var reqPayload dao.NoRekeningReq
+	var reqPayload dao.MutasiReq
 	decodedJWT := c.Locals("decodedJWT").(map[string]interface{})
 	noRekening := decodedJWT["no_rekening"].(string)
 	reqPayload.NoRekening = noRekening
+
+	if err := c.BodyParser(&reqPayload); err != nil {
+        a.Logger.Error(
+            logrus.Fields{"error": err.Error()}, nil, err.Error(),
+        )
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "resp_msg" : err.Error(),
+            "resp_data" : dao.SaldoRes{
+                Saldo: nil,
+            },
+        })
+    }
 
     a.Logger.Info(
         logrus.Fields{"req_payload": fmt.Sprintf("%+v", reqPayload)}, nil, "START: GetMutasi API",

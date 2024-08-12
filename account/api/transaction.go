@@ -37,9 +37,8 @@ func (a *ApiSetup) CreateTabung(c *fiber.Ctx) error {
 		})
 	}
 
-	authPayload := c.Locals("auth_payload").(map[string]interface{})
-	noRekening := authPayload["no_rekening"].(string)
-	pin := authPayload["pin"].(string)
+	decodedJWT := c.Locals("decodedJWT").(map[string]interface{})
+	noRekening := decodedJWT["no_rekening"].(string)
 
     a.Logger.Info(
         logrus.Fields{"req_payload": fmt.Sprintf("%+v", reqPayload)}, nil, "START: CreateTabung API",
@@ -48,7 +47,6 @@ func (a *ApiSetup) CreateTabung(c *fiber.Ctx) error {
 	tabungUpdateParam := dao.CreateTabungTarikUpdate{
 		Nominal: reqPayload.Nominal,
 		NoRekening: noRekening,
-		Pin: pin,
 	}
     data, remark, err := a.Services.CreateTabung(tabungUpdateParam)
     if err != nil {
@@ -97,7 +95,7 @@ func (a *ApiSetup) CreateTarik(c *fiber.Ctx) error {
             },
         })
     }
-
+	
 	// Validate request payload
 	if errMsg, err := utils.ValidateStruct(&reqPayload); err != nil {
 		a.Logger.Error(
@@ -111,9 +109,8 @@ func (a *ApiSetup) CreateTarik(c *fiber.Ctx) error {
 		})
 	}
 
-	authPayload := c.Locals("auth_payload").(map[string]interface{})
-	noRekening := authPayload["no_rekening"].(string)
-	pin := authPayload["pin"].(string)
+	decodedJWT := c.Locals("decodedJWT").(map[string]interface{})
+	noRekening := decodedJWT["no_rekening"].(string)
 
     a.Logger.Info(
         logrus.Fields{"req_payload": fmt.Sprintf("%+v", reqPayload)}, nil, "START: CreateTabung API",
@@ -122,7 +119,6 @@ func (a *ApiSetup) CreateTarik(c *fiber.Ctx) error {
 	tabungUpdateParam := dao.CreateTabungTarikUpdate{
 		Nominal: reqPayload.Nominal,
 		NoRekening: noRekening,
-		Pin: pin,
 	}
 
 

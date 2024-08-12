@@ -6,11 +6,16 @@ import (
 	"fmt"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/sirupsen/logrus"
 	"hafidzresttemplate.com/dao"
 )
 
+
+
+
 func (a *ConsumerSetup) CreateJournalLoop(ctx context.Context, redisClient *redis.Client, topic string, group string) {
+	var perr *pgconn.PgError
 	// Initialize the last ID to the special ID "0" which means start from the very beginning.
 	lastID := "0"
 
@@ -49,11 +54,16 @@ func (a *ConsumerSetup) CreateJournalLoop(ctx context.Context, redisClient *redi
 			}, nil, "subscribed redis message")
 
 			_, remark, err := a.Services.CreateJournal(reqRedis)
+
 			if err != nil {
 				a.Logger.Error(
 					logrus.Fields{"error": err.Error()}, nil, remark,
 				)
-				continue
+				// errors.As(err, &perr)
+				// if perr.Code == "23505"{
+				// 	lastID = messageID
+				// }
+				// continue
 			}
 
 			// Update lastID to the ID of the last successfully processed message.

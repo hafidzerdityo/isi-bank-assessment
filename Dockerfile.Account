@@ -14,4 +14,5 @@ RUN go mod download
 CMD ["go", "run", "main.go"]
 
 # RUN go build 
-# CMD ["./app.exe"]
+# CMD ["go", "build", "main.go"]
+# CMD ["./main.exe"]

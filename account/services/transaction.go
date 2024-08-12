@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 
 
 func (s *ServiceSetup)CreateTabung(reqPayload dao.CreateTabungTarikUpdate) (appResponse dao.SaldoRes, remark string, err error) {
+	ctx := context.Background()
 	s.Logger.Info(
 		logrus.Fields{"req_payload": fmt.Sprintf("%+v", reqPayload)}, nil, "START: CreateTabung Service",
 	)
@@ -43,29 +45,6 @@ func (s *ServiceSetup)CreateTabung(reqPayload dao.CreateTabungTarikUpdate) (appR
 		return
 	}
 
-	if reqPayload.Pin == ""{
-		err = fmt.Errorf("pin empty error")
-		remark = "silahkan input pin" 
-		s.Logger.Error(
-			logrus.Fields{"validation_error": err.Error()}, nil, remark,
-		)
-		return
-	}
-	
-	// check if pin correct
-	if reqPayload.Pin != ""{
-		err = utils.VerifyPassword(reqPayload.Pin, accountData.HashedPin)
-		if err != nil{
-			err = customerrors.ErrWrongPassword
-			remark = "pin salah" 
-			s.Logger.Error(
-				logrus.Fields{"validation_error": err.Error()}, nil, remark,
-			)
-			return
-		}
-	}
-
-
 	// update account saldo (increase)
 	saldo, err := s.Datastore.UpdateSaldo(tx, reqPayload)
 	if err != nil {
@@ -77,12 +56,13 @@ func (s *ServiceSetup)CreateTabung(reqPayload dao.CreateTabungTarikUpdate) (appR
 	}
 
 	// create catatan transfer
+	idJurnal := utils.GenerateNumericUUID(12)
 	var insertCatatanParam dao.Transaction
+	insertCatatanParam.IdJurnal = idJurnal
 	insertCatatanParam.IdRekening = accountData.ID
 	insertCatatanParam.JenisTransaksi = "C"
-	insertCatatanParam.Nominal = reqPayload.Nominal
+	insertCatatanParam.NominalIn = &reqPayload.Nominal
 	insertCatatanParam.Waktu = time.Now()
-	insertCatatanParam.NomorRekeningTujuan = nil
 	err = s.Datastore.InsertCatatan(tx, insertCatatanParam)
 	if err != nil {
 		remark = "database insert data error"
@@ -93,13 +73,14 @@ func (s *ServiceSetup)CreateTabung(reqPayload dao.CreateTabungTarikUpdate) (appR
 	}
 
 	var PubMessageParam dao.PubStruct
-	PubMessageParam.TanggalTransaksi = insertCatatanParam.Waktu
+	PubMessageParam.Waktu = insertCatatanParam.Waktu
 	PubMessageParam.NoRekening= accountData.NoRekening
 	PubMessageParam.JenisTransaksi= "C"
-	PubMessageParam.Nominal = insertCatatanParam.Nominal
+	PubMessageParam.NominalIn = *insertCatatanParam.NominalIn
+	PubMessageParam.IdJurnal = idJurnal
 
 	// send message to the event stream
-	err = s.EventPub.PublishJournal(PubMessageParam)
+	err = s.EventPub.PublishJournal(ctx, PubMessageParam)
 	if err != nil {
 		remark = "Failed to send message to the event stream"
 		s.Logger.Error(
@@ -119,6 +100,7 @@ func (s *ServiceSetup)CreateTabung(reqPayload dao.CreateTabungTarikUpdate) (appR
 
 
 func (s *ServiceSetup)CreateTarik(reqPayload dao.CreateTabungTarikUpdate) (appResponse dao.SaldoRes, remark string, err error) {
+	ctx := context.Background()
 	s.Logger.Info(
 		logrus.Fields{"req_payload": fmt.Sprintf("%+v", reqPayload)}, nil, "START: CreateTarik Service",
 	)
@@ -148,28 +130,6 @@ func (s *ServiceSetup)CreateTarik(reqPayload dao.CreateTabungTarikUpdate) (appRe
 		return
 	}
 
-	if reqPayload.Pin == ""{
-		err = customerrors.ErrWrongPassword
-		remark = "silahkan input pin" 
-		s.Logger.Error(
-			logrus.Fields{"validation_error": err.Error()}, nil, remark,
-		)
-		return
-	}
-	
-	// check if pin correct
-	if reqPayload.Pin != ""{
-		err = utils.VerifyPassword(reqPayload.Pin, accountData.HashedPin)
-		if err != nil{
-			err = customerrors.ErrWrongPassword
-			remark = "pin salah" 
-			s.Logger.Error(
-				logrus.Fields{"validation_error": err.Error()}, nil, remark,
-			)
-			return
-		}
-	}
-
 	if accountData.Saldo < reqPayload.Nominal{
 		err = customerrors.ErrInsufficientBalance
 		remark = "maaf, saldo tidak cukup" 
@@ -194,11 +154,12 @@ func (s *ServiceSetup)CreateTarik(reqPayload dao.CreateTabungTarikUpdate) (appRe
 
 	// create catatan transfer
 	var insertCatatanParam dao.Transaction
+	idJurnal := utils.GenerateNumericUUID(12)
+	insertCatatanParam.IdJurnal = idJurnal
 	insertCatatanParam.IdRekening = accountData.ID
 	insertCatatanParam.JenisTransaksi = "D"
-	insertCatatanParam.Nominal = reqPayload.Nominal
+	insertCatatanParam.NominalOut= &reqPayload.Nominal
 	insertCatatanParam.Waktu = time.Now()
-	insertCatatanParam.NomorRekeningTujuan = nil
 	err = s.Datastore.InsertCatatan(tx, insertCatatanParam)
 	if err != nil {
 		remark = "database insert data error"
@@ -209,13 +170,14 @@ func (s *ServiceSetup)CreateTarik(reqPayload dao.CreateTabungTarikUpdate) (appRe
 	}
 
 	var PubMessageParam dao.PubStruct
-	PubMessageParam.TanggalTransaksi = insertCatatanParam.Waktu
+	PubMessageParam.Waktu = insertCatatanParam.Waktu
 	PubMessageParam.NoRekening = accountData.NoRekening
-	PubMessageParam.Nominal = insertCatatanParam.Nominal
+	PubMessageParam.NominalOut = *insertCatatanParam.NominalOut
 	PubMessageParam.JenisTransaksi = "D"
+	PubMessageParam.IdJurnal = idJurnal
 
 	// send message to the event stream
-	err = s.EventPub.PublishJournal(PubMessageParam)
+	err = s.EventPub.PublishJournal(ctx, PubMessageParam)
 	if err != nil {
 		remark = "failed to send message to the event stream"
 		s.Logger.Error(
@@ -235,6 +197,7 @@ func (s *ServiceSetup)CreateTarik(reqPayload dao.CreateTabungTarikUpdate) (appRe
 
 
 func (s *ServiceSetup)CreateTransfer(reqPayload dao.CreateTransferUpdate) (appResponse dao.SaldoRes, remark string, err error) {
+	ctx := context.Background()
 	s.Logger.Info(
 		logrus.Fields{"req_payload": fmt.Sprintf("%+v", reqPayload)}, nil, "START: CreateTransfer Service",
 	)
@@ -330,13 +293,15 @@ func (s *ServiceSetup)CreateTransfer(reqPayload dao.CreateTransferUpdate) (appRe
 	catatanTime := time.Now()
 
 	// create catatan transfer sender
-	var insertCatatanParam dao.Transaction
-	insertCatatanParam.IdRekening = accountSenderData.ID
-	insertCatatanParam.JenisTransaksi = "T"
-	insertCatatanParam.Nominal = reqPayload.Nominal
-	insertCatatanParam.Waktu = catatanTime
-	insertCatatanParam.NomorRekeningTujuan = &accountReceiverData.NoRekening
-	err = s.Datastore.InsertCatatan(tx, insertCatatanParam)
+	idJurnal := utils.GenerateNumericUUID(12)
+	var insertCatatanParamSender dao.Transaction
+	insertCatatanParamSender.IdJurnal = idJurnal
+	insertCatatanParamSender.IdRekening = accountSenderData.ID
+	insertCatatanParamSender.JenisTransaksi = "T"
+	insertCatatanParamSender.NominalOut = &reqPayload.Nominal
+	insertCatatanParamSender.NominalIn = nil
+	insertCatatanParamSender.Waktu = catatanTime
+	err = s.Datastore.InsertCatatan(tx, insertCatatanParamSender)
 	if err != nil {
 		remark = "database insert data error"
 		s.Logger.Error(
@@ -344,14 +309,17 @@ func (s *ServiceSetup)CreateTransfer(reqPayload dao.CreateTransferUpdate) (appRe
 		)
 		return
 	}
+
+	var insertCatatanParamReceiver dao.Transaction
 
 	// create catatan transfer receiver
-	insertCatatanParam.IdRekening = accountReceiverData.ID
-	insertCatatanParam.JenisTransaksi = "T"
-	insertCatatanParam.Nominal = reqPayload.Nominal
-	insertCatatanParam.Waktu = catatanTime
-	insertCatatanParam.NomorRekeningTujuan = nil
-	err = s.Datastore.InsertCatatan(tx, insertCatatanParam)
+	insertCatatanParamReceiver.IdJurnal = idJurnal
+	insertCatatanParamReceiver.IdRekening = accountReceiverData.ID
+	insertCatatanParamReceiver.JenisTransaksi = "T"
+	insertCatatanParamReceiver.NominalIn = &reqPayload.Nominal
+	insertCatatanParamReceiver.NominalOut = nil
+	insertCatatanParamReceiver.Waktu = catatanTime
+	err = s.Datastore.InsertCatatan(tx, insertCatatanParamReceiver)
 	if err != nil {
 		remark = "database insert data error"
 		s.Logger.Error(
@@ -360,36 +328,39 @@ func (s *ServiceSetup)CreateTransfer(reqPayload dao.CreateTransferUpdate) (appRe
 		return
 	}
 
-	// var PubMessageParamSender dao.PubStruct
-	// PubMessageParamSender.TanggalTransaksi = insertCatatanParam.Waktu
-	// PubMessageParamSender.NoRekening = accountSenderData.NoRekening
-	// PubMessageParamSender.Nominal = insertCatatanParam.Nominal
-	// PubMessageParamSender.JenisTransaksi = "TC"
+	var PubMessageParamSender dao.PubStruct
+	PubMessageParamSender.Waktu = catatanTime
+	PubMessageParamSender.NoRekening = accountSenderData.NoRekening
+	PubMessageParamSender.NominalOut = reqPayload.Nominal
+	PubMessageParamSender.JenisTransaksi = "T"
+	PubMessageParamSender.IdJurnal = idJurnal
 
 
-	// // send message to the event stream
-	// err = s.EventPub.PublishJournal(PubMessageParamSender)
-	// if err != nil {
-	// 	remark = "Failed to send message to the event stream"
-	// 	s.Logger.Error(
-	// 		logrus.Fields{"error": err.Error()}, nil, remark,
-	// 	)
-	// 	return
-	// }
-	// var PubMessageParamReceiver dao.PubStruct
-	// PubMessageParamReceiver.TanggalTransaksi = insertCatatanParam.Waktu
-	// PubMessageParamReceiver.NoRekening = accountReceiverData.NoRekening
-	// PubMessageParamReceiver.Nominal = insertCatatanParam.Nominal
-	// PubMessageParamSender.JenisTransaksi = "TR"
-	// // send message to the event stream
-	// err = s.EventPub.PublishJournal(PubMessageParamReceiver)
-	// if err != nil {
-	// 	remark = "Failed to send message to the event stream"
-	// 	s.Logger.Error(
-	// 		logrus.Fields{"error": err.Error()}, nil, remark,
-	// 	)
-	// 	return
-	// }
+	// send message to the event stream
+	err = s.EventPub.PublishJournal(ctx, PubMessageParamSender)
+	if err != nil {
+		remark = "Failed to send message to the event stream"
+		s.Logger.Error(
+			logrus.Fields{"error": err.Error()}, nil, remark,
+		)
+		return
+	}
+	var PubMessageParamReceiver dao.PubStruct
+	PubMessageParamReceiver.Waktu = catatanTime
+	PubMessageParamReceiver.NoRekening = accountReceiverData.NoRekening
+	PubMessageParamReceiver.NominalIn = reqPayload.Nominal
+	PubMessageParamSender.JenisTransaksi = "T"
+	PubMessageParamSender.IdJurnal = idJurnal
+	// send message to the event stream
+	
+	err = s.EventPub.PublishJournal(ctx, PubMessageParamReceiver)
+	if err != nil {
+		remark = "Failed to send message to the event stream"
+		s.Logger.Error(
+			logrus.Fields{"error": err.Error()}, nil, remark,
+		)
+		return
+	}
 
 	appResponse.Saldo = &saldo
 

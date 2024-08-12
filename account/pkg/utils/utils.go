@@ -75,3 +75,15 @@ func GenerateNumericUUID(length int) string {
 
 	return uuid
 }
+
+func GenerateAlphanumericUUID(length int) string {
+	rand.Seed(time.Now().UnixNano())
+
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	uuid := make([]byte, length)
+	for i := range uuid {
+		uuid[i] = charset[rand.Intn(len(charset))]
+	}
+
+	return string(uuid)
+}

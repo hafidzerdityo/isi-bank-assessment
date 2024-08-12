@@ -30,11 +30,12 @@ type Account struct{
 
 type Transaction struct{
 	ID          int       `gorm:"primaryKey"`
-	IdRekening          int       `gorm:"not null"`
+	IdRekening          int       `gorm:"primaryKey;not null"`
+	IdJurnal          string       `gorm:"primaryKey;not null"`
 	JenisTransaksi          string    `gorm:"size:1;not null"`
-	Nominal      float64     `gorm:"type:numeric(10,2);not null"`
+	NominalIn      *float64     `gorm:"type:numeric(10,2)"`
+	NominalOut      *float64     `gorm:"type:numeric(10,2)"`
 	Waktu     time.Time 
-	NomorRekeningTujuan *string    `gorm:"size:255"`
 }
 
 
