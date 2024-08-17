@@ -2,9 +2,11 @@ package utils
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 	"hafidzresttemplate.com/dao"
 )
@@ -24,13 +26,15 @@ func VerifyPassword(plainPassword, hashedPassword string)(err error) {
 	return
 }
 
-// Hardcoded secret key
-var secretKey = []byte("your_secret_key")
 
 // CreateJWTToken creates a JWT token with email, no_rekening, and expiration time in payload
 func CreateJWTToken(jwtPayload dao.JWTField) (tokenString string, err error) {
+	godotenv.Load("config.env")
+	var JWT_SECRET_KEY = os.Getenv("JWT_SECRET_KEY")
+	// cast secret key to slice of bytes
+	secretKey := []byte(JWT_SECRET_KEY)
 	// Define the expiration time
-	expirationTime := time.Now().Add(10 * time.Minute) // Example: 1 day from now
+	expirationTime := time.Now().Add(10 * time.Minute) // Example: 10 minute from now
 
 	// Create the JWT claims, which includes the email, no_rekening, and exp
 	claims := jwt.MapClaims{
@@ -45,10 +49,16 @@ func CreateJWTToken(jwtPayload dao.JWTField) (tokenString string, err error) {
 		return "", err
 	}
 
+	fmt.Println(JWT_SECRET_KEY,"============")
+
 	return tokenString, nil
 }
 
 func ValidateJWTToken(tokenString string) (isValid bool, remark string, tokenData map[string]interface{}, err error) {
+	godotenv.Load("config.env")
+	var JWT_SECRET_KEY = os.Getenv("JWT_SECRET_KEY")
+	// cast secret key to slice of bytes
+	secretKey := []byte(JWT_SECRET_KEY)
 	// Parse the token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Check the signing method

@@ -5,7 +5,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
-	"hafidzresttemplate.com/customErrors"
 	"hafidzresttemplate.com/dao"
 	"hafidzresttemplate.com/pkg/utils"
 )
@@ -55,13 +54,13 @@ func (a *ApiSetup) CreateTabung(c *fiber.Ctx) error {
         )
 
 		statusCode := fiber.StatusInternalServerError
-		if err == customErrors.ErrInsufficientBalance{
+		if err == utils.ErrInsufficientBalance{
 			statusCode = fiber.StatusBadRequest
 		}
-		if err == customErrors.ErrAccountNotFound{
+		if err == utils.ErrAccountNotFound{
 			statusCode = fiber.StatusNotFound
 		}
-		if err == customErrors.ErrWrongPassword{
+		if err == utils.ErrWrongPassword{
 			statusCode = fiber.StatusUnauthorized
 		}
         return c.Status(statusCode).JSON(fiber.Map{
@@ -129,13 +128,13 @@ func (a *ApiSetup) CreateTarik(c *fiber.Ctx) error {
         )
 
 		statusCode := fiber.StatusInternalServerError
-		if err == customErrors.ErrInsufficientBalance{
+		if err == utils.ErrInsufficientBalance{
 			statusCode = fiber.StatusBadRequest
 		}
-		if err == customErrors.ErrAccountNotFound{
+		if err == utils.ErrAccountNotFound{
 			statusCode = fiber.StatusNotFound
 		}
-		if err == customErrors.ErrWrongPassword{
+		if err == utils.ErrWrongPassword{
 			statusCode = fiber.StatusUnauthorized
 		}
         return c.Status(statusCode).JSON(fiber.Map{

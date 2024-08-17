@@ -7,7 +7,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	customerrors "hafidzresttemplate.com/customErrors"
 	"hafidzresttemplate.com/dao"
 	"hafidzresttemplate.com/pkg/utils"
 )
@@ -30,7 +29,7 @@ func (s *ServiceSetup)CreateTabung(reqPayload dao.CreateTabungTarikUpdate) (appR
 	// check if account exist
 	accountData, err := s.Datastore.GetAccount(s.Db, reqPayload.NoRekening)
 	if err == gorm.ErrRecordNotFound{
-		err = customerrors.ErrAccountNotFound
+		err = utils.ErrAccountNotFound
 		remark = "no rekening tidak ditemukan" 
 		s.Logger.Error(
 			logrus.Fields{"validation_error": err.Error()}, nil, remark,
@@ -115,7 +114,7 @@ func (s *ServiceSetup)CreateTarik(reqPayload dao.CreateTabungTarikUpdate) (appRe
 	// check if account exist
 	accountData, err := s.Datastore.GetAccount(s.Db, reqPayload.NoRekening)
 	if err == gorm.ErrRecordNotFound{
-		err = customerrors.ErrAccountNotFound
+		err = utils.ErrAccountNotFound
 		remark = "no rekening tidak ditemukan" 
 		s.Logger.Error(
 			logrus.Fields{"validation_error": err.Error()}, nil, remark,
@@ -131,7 +130,7 @@ func (s *ServiceSetup)CreateTarik(reqPayload dao.CreateTabungTarikUpdate) (appRe
 	}
 
 	if accountData.Saldo < reqPayload.Nominal{
-		err = customerrors.ErrInsufficientBalance
+		err = utils.ErrInsufficientBalance
 		remark = "maaf, saldo tidak cukup" 
 		s.Logger.Error(
 			logrus.Fields{"validation_error": err.Error()}, nil, remark,

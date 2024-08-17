@@ -9,7 +9,7 @@ import (
 )
 
 
-func (s *ServiceSetup)GetSaldo(reqPayload dao.NoRekeningReq) (appResponse dao.SaldoRes, remark string, err error) {
+func (s *ServiceSetup)GetSaldo(reqPayload dao.NoRekeningReq) (appResponse dao.SaldoWithCifRes, remark string, err error) {
 	s.Logger.Info(
 		logrus.Fields{"req_payload": fmt.Sprintf("%+v", appResponse)}, nil, "START: GetSaldo Service",
 	)
@@ -20,7 +20,7 @@ func (s *ServiceSetup)GetSaldo(reqPayload dao.NoRekeningReq) (appResponse dao.Sa
 	}
 
 	// check if customer exist
-	customerData, err := s.Datastore.GetAccount(s.Db, reqPayload.NoRekening)
+	customerData, err := s.Datastore.GetAccountAndCif(s.Db, reqPayload.NoRekening)
 	if err == gorm.ErrRecordNotFound{
 		tx.Rollback()
 		err = fmt.Errorf("account not exist error")
@@ -50,6 +50,7 @@ func (s *ServiceSetup)GetSaldo(reqPayload dao.NoRekeningReq) (appResponse dao.Sa
 
 	// Get Saldo
 	appResponse.Saldo = &customerData.Saldo
+	appResponse.Nama = customerData.Nama
 
 	tx.Commit()
 
