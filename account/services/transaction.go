@@ -61,7 +61,8 @@ func (s *ServiceSetup)CreateTabung(reqPayload dao.CreateTabungTarikUpdate) (appR
 	insertCatatanParam.IdRekening = accountData.ID
 	insertCatatanParam.JenisTransaksi = "C"
 	insertCatatanParam.NominalIn = &reqPayload.Nominal
-	insertCatatanParam.Waktu = time.Now()
+	wibTime, _ := time.LoadLocation("Asia/Jakarta")
+	insertCatatanParam.Waktu = time.Now().In(wibTime)
 	err = s.Datastore.InsertCatatan(tx, insertCatatanParam)
 	if err != nil {
 		remark = "database insert data error"

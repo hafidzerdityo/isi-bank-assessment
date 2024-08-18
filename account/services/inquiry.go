@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -123,6 +124,7 @@ func (s *ServiceSetup)GetMutasi(reqPayload dao.MutasiReq) (appResponse dao.Mutas
 	}
 
 	// Get List Mutasi
+	wib, _ := time.LoadLocation("Asia/Jakarta")
 	for _, val := range mutasiData {
 		derNominalIn := float64(0)
 		if val.NominalIn != nil{
@@ -133,7 +135,7 @@ func (s *ServiceSetup)GetMutasi(reqPayload dao.MutasiReq) (appResponse dao.Mutas
 			derNominalOut = *val.NominalOut
 		}
 		mutasiRes := dao.MutasiData{
-			Waktu:          val.Waktu,
+			Waktu:          val.Waktu.In(wib),
 			JenisTransaksi: val.JenisTransaksi,
 			IdJurnal: val.IdJurnal,
 			NominalIn:        derNominalIn,
