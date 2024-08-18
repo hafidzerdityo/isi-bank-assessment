@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"hafidzresttemplate.com/datastore"
@@ -21,16 +23,14 @@ func (s *ServiceSetup)TransactionStatusHandler(tx *gorm.DB, err *error) {
 	if panicMessage != nil {
 		s.Logger.Warn(logrus.Fields{"panic": panicMessage}, nil, "transaction failed, rollback")
 		tx.Rollback()
-		panic("internal server error")
+		*err = fmt.Errorf("panic recovered")
 	}
 	if *err != nil {
 		s.Logger.Warn(logrus.Fields{"error": (*err).Error()}, nil, "transaction failed, rollback")
 		tx.Rollback()
 		return
-	} else {
-		s.Logger.Info(logrus.Fields{}, nil, "transaction success, committed ")
-		tx.Commit()
-		return
-	}
+	} 
+	s.Logger.Info(logrus.Fields{}, nil, "transaction success, committed ")
+	tx.Commit()
 }
 
