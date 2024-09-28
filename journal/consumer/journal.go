@@ -61,9 +61,11 @@ func (a *ConsumerSetup) CreateJournalLoop(ctx context.Context, redisClient *redi
 					logrus.Fields{"error": err.Error()}, nil, remark,
 				)
 				errors.As(err, &perr)
+				// if there is a duplicate violation error, update the lastID keep continue to the new row.
 				if perr.Code == "23505"{
 					lastID = messageID
 				}
+				// if the error is other than duplicate violation error, keep trying to insert current row
 				continue
 			}
 

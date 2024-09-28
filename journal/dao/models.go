@@ -6,8 +6,8 @@ type Journal struct {
     NoRekening    string      `gorm:"primaryKey;size:255;"`
     IdJurnal      string      `gorm:"primaryKey;not null;size:255"`
     JenisTransaksi string     `gorm:"size:1;not null"`
-    NominalIn     *float64    `gorm:"type:numeric(10,2)"`
-    NominalOut    *float64    `gorm:"type:numeric(10,2)"`
+    NominalIn     *float64    `gorm:"type:numeric(20,2)"`
+    NominalOut    *float64    `gorm:"type:numeric(20,2)"`
     Waktu         time.Time 
 }
 
